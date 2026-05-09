@@ -1,13 +1,54 @@
 <script setup>
+import { computed } from 'vue'
 import PublicChrome from '../../components/layout/PublicChrome.vue'
+import {
+  getDateLine,
+  getEventTags,
+  getLocationLine,
+  getPriceLabel,
+  getSpotsLabel,
+  getTimeLine,
+} from '../../services/publicEvents'
 
 const emit = defineEmits(['navigate'])
+const props = defineProps({
+  publicEvents: {
+    type: Array,
+    default: () => [],
+  },
+  publicEventsLoading: {
+    type: Boolean,
+    default: false,
+  },
+  publicEventsSource: {
+    type: String,
+    default: 'fallback',
+  },
+})
+
+const activeEvent = computed(() => props.publicEvents[0] ?? null)
 
 const flow = [
   ['10:00 AM', 'Morning Coffee & Intention Setting', 'Start the day with a curated roast and a brief overview of our gathering philosophy.'],
   ['11:00 AM', 'The Sensory Workshop', 'A tactile exploration of materials, textures, and scents that define a premium host experience.'],
   ['12:15 PM', 'Communal Lunch & Q&A', 'We put our theories into practice over a light, locally-sourced lunch.'],
 ]
+
+const eventTitle = computed(() => activeEvent.value?.title || 'The Art of Mindful Hosting: A Sunday Morning Intensive')
+const eventDescription = computed(() => {
+  return (
+    activeEvent.value?.description ||
+    'Join us for an intimate, hands-on masterclass dedicated to the philosophy of Radical Hospitality. This is not just about planning an event; it is about designing a room where guests feel seen.'
+  )
+})
+const eventTags = computed(() => activeEvent.value ? getEventTags(activeEvent.value) : ['Curated Workshop', 'Lifestyle'])
+const hostName = computed(() => activeEvent.value?.host_name || 'Elena Rodriguez')
+const eventDate = computed(() => activeEvent.value ? getDateLine(activeEvent.value) : 'Sunday, June 23')
+const eventTime = computed(() => activeEvent.value ? getTimeLine(activeEvent.value) : '10:00 AM - 1:00 PM EST')
+const locationName = computed(() => activeEvent.value?.venue_name || 'The Glass Atelier')
+const locationLine = computed(() => activeEvent.value ? getLocationLine(activeEvent.value) : 'SoHo, New York, NY')
+const priceLabel = computed(() => activeEvent.value ? getPriceLabel(activeEvent.value) : '$125')
+const spotsLabel = computed(() => getSpotsLabel(activeEvent.value, '8 spots left'))
 </script>
 
 <template>
@@ -16,29 +57,32 @@ const flow = [
       <section class="event-detail-hero">
         <div>
           <div class="landing-tags">
-            <span>Curated Workshop</span>
-            <span>Lifestyle</span>
+            <span v-for="tag in eventTags" :key="tag">{{ tag }}</span>
           </div>
-          <h1>The Art of Mindful Hosting: A Sunday Morning Intensive</h1>
-          <p class="event-host-line">Hosted by <strong>Elena Rodriguez</strong></p>
+          <h1>{{ eventTitle }}</h1>
+          <p class="event-host-line">
+            Hosted by <strong>{{ hostName }}</strong>
+            <span v-if="publicEventsLoading" class="data-note">Syncing event...</span>
+            <span v-else-if="publicEventsSource === 'supabase'" class="data-note">Live from Supabase</span>
+          </p>
           <div class="event-meta-grid">
             <div class="stitch-panel pad">
               <span class="material-symbols-outlined">calendar_today</span>
-              <p>Sunday, June 23</p>
-              <strong>10:00 AM - 1:00 PM EST</strong>
+              <p>{{ eventDate }}</p>
+              <strong>{{ eventTime }}</strong>
             </div>
             <div class="stitch-panel pad">
               <span class="material-symbols-outlined">location_on</span>
-              <p>The Glass Atelier</p>
-              <strong>SoHo, New York, NY</strong>
+              <p>{{ locationName }}</p>
+              <strong>{{ locationLine }}</strong>
             </div>
           </div>
         </div>
 
         <aside class="event-ticket-card stitch-panel pad">
           <p>Investment</p>
-          <h3>$125</h3>
-          <span class="stitch-chip warn">8 spots left</span>
+          <h3>{{ priceLabel }}</h3>
+          <span class="stitch-chip warn">{{ spotsLabel }}</span>
           <ul>
             <li><span class="material-symbols-outlined">check_circle</span> All workshop materials included</li>
             <li><span class="material-symbols-outlined">restaurant</span> Gourmet seasonal lunch</li>
@@ -51,14 +95,10 @@ const flow = [
       <section class="event-body-grid">
         <article class="stitch-panel pad event-copy-block">
           <h2>About the Gathering</h2>
+          <p>{{ eventDescription }}</p>
           <p>
-            Join us for an intimate, hands-on masterclass dedicated to the philosophy of
-            Radical Hospitality. This is not just about planning an event; it is about
-            designing a room where guests feel seen.
-          </p>
-          <p>
-            Elena Rodriguez will guide you through her signature approach to creating spaces
-            where memory, sensory detail, and community connection meet.
+            Gatherly keeps the operational layer close by, from venue and vendor prep to
+            reminders, community updates, and marketing assets.
           </p>
         </article>
 
@@ -77,8 +117,8 @@ const flow = [
 
         <article class="stitch-panel pad event-copy-block">
           <h2>Location</h2>
-          <p>The Glass Atelier</p>
-          <p>42 Greene St, New York, NY</p>
+          <p>{{ locationName }}</p>
+          <p>{{ activeEvent?.venue_address || locationLine }}</p>
           <button class="stitch-secondary" type="button">Open Maps</button>
         </article>
 

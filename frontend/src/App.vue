@@ -1,5 +1,5 @@
 <script setup>
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import AppShell from './components/layout/AppShell.vue'
 import HomeView from './views/public/HomeView.vue'
 import ExploreView from './views/public/ExploreView.vue'
@@ -11,6 +11,7 @@ import VendorView from './views/workspace/VendorView.vue'
 import MarketingStudioView from './views/workspace/MarketingStudioView.vue'
 import AttendeesView from './views/workspace/AttendeesView.vue'
 import CommunityView from './views/workspace/CommunityView.vue'
+import { fetchPublicEvents } from './services/publicEvents'
 
 const publicPages = [
   { id: 'home', label: 'Home', component: HomeView },
@@ -30,6 +31,10 @@ const workspacePages = [
 
 const allPages = [...publicPages, ...workspacePages]
 const activeView = ref('home')
+const publicEvents = ref([])
+const publicEventsLoading = ref(true)
+const publicEventsSource = ref('fallback')
+const publicEventsError = ref(null)
 
 const activeComponent = computed(() => {
   return allPages.find((page) => page.id === activeView.value)?.component ?? DashboardView
@@ -41,10 +46,27 @@ watch(activeView, async () => {
   await nextTick()
   window.scrollTo({ top: 0, left: 0 })
 })
+
+onMounted(async () => {
+  const result = await fetchPublicEvents()
+
+  publicEvents.value = result.events
+  publicEventsSource.value = result.source
+  publicEventsError.value = result.error
+  publicEventsLoading.value = false
+})
 </script>
 
 <template>
-  <component v-if="isPublicPage" :is="activeComponent" @navigate="activeView = $event" />
+  <component
+    v-if="isPublicPage"
+    :is="activeComponent"
+    :public-events="publicEvents"
+    :public-events-loading="publicEventsLoading"
+    :public-events-source="publicEventsSource"
+    :public-events-error="publicEventsError"
+    @navigate="activeView = $event"
+  />
 
   <AppShell
     v-else

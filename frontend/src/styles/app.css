@@ -471,6 +471,14 @@ a {
   font-weight: 700;
 }
 
+.data-note {
+  display: inline-flex;
+  margin-left: 0.45rem;
+  color: #ae3115;
+  font-size: 0.74rem;
+  font-weight: 900;
+}
+
 .landing-text-link {
   border: 0;
   color: #e05e4b;

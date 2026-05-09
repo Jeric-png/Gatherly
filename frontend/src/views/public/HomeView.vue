@@ -1,5 +1,28 @@
 <script setup>
+import { computed } from 'vue'
+import {
+  getDateBadge,
+  getEventImage,
+  getEventTags,
+  getLocationLine,
+  getPriceLabel,
+} from '../../services/publicEvents'
+
 const emit = defineEmits(['navigate'])
+const props = defineProps({
+  publicEvents: {
+    type: Array,
+    default: () => [],
+  },
+  publicEventsLoading: {
+    type: Boolean,
+    default: false,
+  },
+  publicEventsSource: {
+    type: String,
+    default: 'fallback',
+  },
+})
 
 const statChips = [
   { icon: 'event_available', text: '120+ events planned', tone: 'primary' },
@@ -10,7 +33,7 @@ const statChips = [
 const heroHackathonImage =
   'https://lh3.googleusercontent.com/aida-public/AB6AXuAhmcTfrwcqiDURPdm1av2IyA5A0FObUlJWNe9CYQ_fI_iitaJ-e5f4QuwIEhBAkRk10CLX4gyCLKnYhURBvxzEgDBwjOroj0BFRbbye9BQ5PJ49DDQHMy2JygDeolrzIZ2PVSAxmvS2UvOUmUn3-ouqqtaZUZIuqZ3W_A9Ag_UbBpa_Wyz7QU8dULOfFMEKvfgjlc28E-H35lAD2E6PI1KMq9ENqym-s29zhJPt0tua3-qcKDPjk3_taTY1jgNdRj8lEwiUp3ygpM'
 
-const trendingEvents = [
+const fallbackTrendingEvents = [
   {
     date: 'OCT\n24',
     price: '$18',
@@ -51,6 +74,22 @@ const trendingEvents = [
       'https://lh3.googleusercontent.com/aida-public/AB6AXuDhl5lwyhATb2MTErObUtdTr-M1kAY8871UjCx0QfcrQ8iltwaSQiQe9nYXPWEH4uRSdnpfSCR2z0j8M1FKEsGZvNAybV8lePbad7qLLYKcmwzvvxDhPCVh-mjzWzKwoa5nKuFlRESpSi50-8rp-OZndFxj_yEL5SQevRN9UaBuJtVUf8j11oxSrlBPxSdlgR-BH0bSykwV5X5fVJUUjiEnwiyaGT4BXM9ON91QW3PmjqbL30k_RVHiFF4P-0X0Qgc0Jtrwydl3Gr0',
   },
 ]
+
+const trendingEvents = computed(() => {
+  if (!props.publicEvents.length) {
+    return fallbackTrendingEvents
+  }
+
+  return props.publicEvents.slice(0, 4).map((event, index) => ({
+    date: getDateBadge(event),
+    price: getPriceLabel(event),
+    title: event.title,
+    location: getLocationLine(event),
+    host: event.host_name || 'Gatherly host',
+    tags: getEventTags(event),
+    image: getEventImage(event, index),
+  }))
+})
 
 const aiFeatures = [
   {
@@ -159,7 +198,11 @@ const aiFeatures = [
         <div class="landing-section-header">
           <div>
             <h2>Trending Events</h2>
-            <p>Discover what's happening in your community.</p>
+            <p>
+              Discover what's happening in your community.
+              <span v-if="publicEventsLoading" class="data-note">Syncing events...</span>
+              <span v-else-if="publicEventsSource === 'supabase'" class="data-note">Live from Supabase</span>
+            </p>
           </div>
           <button class="landing-text-link" type="button" @click="emit('navigate', 'explore')">
             Explore all
