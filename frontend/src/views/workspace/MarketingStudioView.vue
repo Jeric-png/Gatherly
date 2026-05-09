@@ -1,9 +1,60 @@
 <script setup>
-const scenes = [
-  ['SCENE 01', 'Where craftsmanship meets the moon...'],
-  ['SCENE 02', 'Artisanal textures and sustainable luxury.'],
-  ['SCENE 03', 'Reserve your seat at the table.'],
-]
+import { computed, ref } from 'vue'
+import { generateMarketingAsset } from '../../services/workspaceData'
+
+const props = defineProps({
+  workspace: {
+    type: Object,
+    default: null,
+  },
+  workspaceLoading: {
+    type: Boolean,
+    default: false,
+  },
+  workspaceError: {
+    type: String,
+    default: null,
+  },
+})
+
+const emit = defineEmits(['refresh-workspace'])
+const generating = ref(false)
+const actionError = ref('')
+
+const event = computed(() => props.workspace?.event ?? null)
+const campaign = computed(() => props.workspace?.campaigns?.[0] ?? null)
+const assets = computed(() => props.workspace?.assets ?? [])
+const venues = computed(() => props.workspace?.venues ?? [])
+const vendors = computed(() => props.workspace?.vendors ?? [])
+const videoScenes = computed(() => {
+  const sourceAssets = assets.value.filter((asset) => ['video_prompt', 'campaign_plan'].includes(asset.asset_type))
+
+  if (sourceAssets.length) {
+    return sourceAssets.slice(0, 3).map((asset, index) => [`SCENE 0${index + 1}`, asset.content || asset.prompt])
+  }
+
+  return [
+    ['SCENE 01', 'Open on the selected venue and event atmosphere.'],
+    ['SCENE 02', 'Show vendor details, food, community, and host energy.'],
+    ['SCENE 03', 'Close with RSVP and campaign call to action.'],
+  ]
+})
+
+async function generateAsset() {
+  if (!props.workspace) return
+
+  generating.value = true
+  actionError.value = ''
+
+  try {
+    await generateMarketingAsset(props.workspace)
+    emit('refresh-workspace')
+  } catch (error) {
+    actionError.value = error.message
+  } finally {
+    generating.value = false
+  }
+}
 </script>
 
 <template>
@@ -11,38 +62,39 @@ const scenes = [
     <div class="stitch-topline">
       <div class="stitch-title-group">
         <h2>Campaign Studio</h2>
-        <p>Full-funnel campaign orchestration</p>
+        <p>{{ campaign?.title || 'Full-funnel campaign orchestration' }}</p>
       </div>
       <div class="stitch-actions">
-        <button class="stitch-secondary" type="button">Draft Saved</button>
-        <button class="stitch-primary" type="button">Launch Campaign</button>
+        <button class="stitch-secondary" type="button">{{ campaign?.status || 'Draft' }}</button>
+        <button class="stitch-primary" type="button" :disabled="generating || workspaceLoading" @click="generateAsset">
+          {{ generating ? 'Generating...' : 'Generate Campaign Plan' }}
+        </button>
       </div>
     </div>
+
+    <p v-if="workspaceError || actionError" class="auth-error">{{ workspaceError || actionError }}</p>
 
     <div class="campaign-layout">
       <section class="stitch-panel pad campaign-brief">
         <span class="stitch-chip">strategy Campaign Inputs</span>
-        <h3>Harvest Moon Garden Gala</h3>
-        <p>The Heritage Gardens, North Wing</p>
-        <p>
-          A sophisticated garden gala under the harvest moon, blending sustainable luxury
-          with artisanal craftsmanship.
-        </p>
+        <h3>{{ event?.title || 'Loading campaign brief...' }}</h3>
+        <p>{{ venues[0]?.name || event?.venue_name || 'No venue selected yet' }}</p>
+        <p>{{ campaign?.strategy_summary || event?.description }}</p>
         <div class="stitch-grid-2">
-          <div><span>Audience</span><strong>Eco-conscious luxury enthusiasts</strong></div>
-          <div><span>Vendors</span><strong>Roots & Shoots, Artisan Clay Co.</strong></div>
-          <div><span>Vibe</span><strong>Warm Coral, Sustainable</strong></div>
-          <div><span>Goal</span><strong>Sell 250 tickets</strong></div>
+          <div><span>Audience</span><strong>{{ campaign?.audience || 'Audience pending' }}</strong></div>
+          <div><span>Vendors</span><strong>{{ vendors.map((vendor) => vendor.name).join(', ') || 'No vendors selected' }}</strong></div>
+          <div><span>Channels</span><strong>{{ campaign?.channels?.join(', ') || 'Channels pending' }}</strong></div>
+          <div><span>Goal</span><strong>{{ campaign?.objective || 'Campaign objective pending' }}</strong></div>
         </div>
       </section>
 
       <aside class="stitch-panel pad launch-checklist">
         <span class="stitch-chip warn">READY TO LAUNCH</span>
         <h3>Launch Checklist</h3>
-        <p><span class="material-symbols-outlined">check_circle</span>Email Invitation Sequence <strong>Ready</strong></p>
-        <p><span class="material-symbols-outlined">check_circle</span>Social Media Assets <strong>Ready</strong></p>
-        <p><span class="material-symbols-outlined">error</span>Promo Video Export <strong>Missing Rendering</strong></p>
-        <p><span class="material-symbols-outlined">check_circle</span>Search Ad Landing Page <strong>Ready</strong></p>
+        <p><span class="material-symbols-outlined">check_circle</span>Campaign Strategy <strong>{{ campaign ? 'Ready' : 'Missing' }}</strong></p>
+        <p><span class="material-symbols-outlined">check_circle</span>Generated Assets <strong>{{ assets.length }}</strong></p>
+        <p><span class="material-symbols-outlined">error</span>Promo Video Export <strong>Needs Rendering</strong></p>
+        <p><span class="material-symbols-outlined">check_circle</span>Venue/Vendor Context <strong>{{ venues.length + vendors.length }}</strong></p>
       </aside>
     </div>
 
@@ -50,14 +102,14 @@ const scenes = [
       <article class="stitch-panel pad">
         <span class="stitch-chip">photo_prints Visual Asset Engine</span>
         <div class="poster-preview">
-          <p>HARVEST MOON</p>
-          <h3>GARDEN GALA 2024</h3>
-          <span>Sustainable - Artisanal - Communal</span>
-          <span>October 24th | 6:00 PM</span>
+          <p>{{ event?.category || 'EVENT' }}</p>
+          <h3>{{ event?.title || 'CAMPAIGN' }}</h3>
+          <span>{{ venues[0]?.name || 'Venue pending' }}</span>
+          <span>{{ campaign?.channels?.slice(0, 3)?.join(' - ') || 'Channels pending' }}</span>
         </div>
         <div class="stitch-actions">
           <button class="stitch-secondary" type="button">Poster Variants</button>
-          <button class="stitch-primary" type="button">Generate More</button>
+          <button class="stitch-primary" type="button" @click="generateAsset">Generate More</button>
         </div>
       </article>
 
@@ -69,7 +121,7 @@ const scenes = [
           <button class="stitch-secondary" type="button">45S</button>
         </div>
         <div class="stitch-card-list">
-          <div v-for="[label, caption] in scenes" :key="label" class="stitch-row-card">
+          <div v-for="[label, caption] in videoScenes" :key="label" class="stitch-row-card">
             <span class="material-symbols-outlined">play_circle</span>
             <div>
               <h4>{{ label }}</h4>

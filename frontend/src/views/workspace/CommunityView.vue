@@ -1,29 +1,58 @@
 <script setup>
-const schedule = [
-  ['09:00 AM', 'Registration & Coffee'],
-  ['10:00 AM', 'Opening Brief'],
-  ['11:00 AM', 'Team Formation'],
-  ['12:30 PM', 'Hacking Begins'],
-]
+import { computed } from 'vue'
 
-const messages = [
-  ['Amanda', '10:42 AM', 'Does anyone have a spare USB-C adapter for the demo table?'],
-  ['Jeric', '10:45 AM', 'Backend API skeleton is ready. I pushed the schema notes into the group doc.'],
-  ['Ryan', '10:50 AM', 'Can we confirm team formation rules before the opening brief?'],
-  ['Event Helper AI', '10:51 AM', 'Summary: attendees are asking about setup equipment and team formation rules.'],
-]
+const props = defineProps({
+  workspace: {
+    type: Object,
+    default: null,
+  },
+  workspaceLoading: {
+    type: Boolean,
+    default: false,
+  },
+  workspaceError: {
+    type: String,
+    default: null,
+  },
+})
 
-const online = ['Amanda C.', 'Jeric T.', 'Ryan M.', 'Sarah K.']
+const event = computed(() => props.workspace?.event)
+const messages = computed(() => props.workspace?.messages ?? [])
+const attendees = computed(() => props.workspace?.attendees ?? [])
+const pinnedMessage = computed(() => messages.value.find((message) => message.is_pinned))
+const online = computed(() => attendees.value.slice(0, 6))
+
+const schedule = computed(() => {
+  if (!event.value) {
+    return []
+  }
+
+  return [
+    [formatTime(event.value.starts_at), 'Guest arrival'],
+    [formatTime(event.value.ends_at), 'Event close'],
+  ]
+})
+
+function formatTime(value) {
+  if (!value) {
+    return 'TBD'
+  }
+
+  return new Intl.DateTimeFormat('en', {
+    hour: 'numeric',
+    minute: '2-digit',
+  }).format(new Date(value))
+}
 </script>
 
 <template>
   <section class="stitch-page community-stitch">
     <div class="community-layout">
       <aside class="stitch-panel pad community-event-card">
-        <span class="stitch-chip">Oct 24-26</span>
-        <h2>Cybersecurity AI Hackathon</h2>
-        <p>Building next-gen threat detection with LLMs.</p>
-        <span class="stitch-chip neutral">Hosted by TechHub</span>
+        <span class="stitch-chip">{{ event?.starts_at ? new Date(event.starts_at).toLocaleDateString('en', { month: 'short', day: 'numeric' }) : 'Draft' }}</span>
+        <h2>{{ event?.title || 'Loading event' }}</h2>
+        <p>{{ event?.description || 'Community chat will activate once the workspace is loaded.' }}</p>
+        <span class="stitch-chip neutral">Hosted by {{ event?.host_name || 'Gatherly' }}</span>
 
         <h3>Event Schedule</h3>
         <div class="stitch-card-list">
@@ -38,7 +67,7 @@ const online = ['Amanda C.', 'Jeric T.', 'Ryan M.', 'Sarah K.']
         <div class="stitch-topline">
           <div class="stitch-title-group">
             <h2>General Chat</h2>
-            <p>Event discussion, pinned updates, and AI summaries.</p>
+            <p>Event discussion, pinned updates, AI summaries, and translated attendee messages.</p>
           </div>
           <div class="stitch-actions">
             <button class="stitch-secondary" type="button">Summarize</button>
@@ -46,21 +75,29 @@ const online = ['Amanda C.', 'Jeric T.', 'Ryan M.', 'Sarah K.']
           </div>
         </div>
 
-        <div class="pinned-message">
+        <div v-if="pinnedMessage" class="pinned-message">
           <span class="material-symbols-outlined">push_pin</span>
           <div>
             <strong>Pinned by Host</strong>
-            <p>Welcome! Ensure you have Docker installed before the opening brief.</p>
+            <p>{{ pinnedMessage.body }}</p>
           </div>
         </div>
 
+        <div v-if="workspaceLoading" class="auth-error">Loading community workspace...</div>
+        <div v-else-if="workspaceError" class="auth-error">{{ workspaceError }}</div>
+
         <div class="stitch-card-list">
-          <article v-for="[author, time, body] in messages" :key="author + time" class="chat-bubble">
+          <div v-if="!messages.length" class="empty-state">
+            <span class="material-symbols-outlined">forum</span>
+            <h3>No community messages yet</h3>
+            <p>Messages, host announcements, AI summaries, and real-time translations will appear here once participants start posting.</p>
+          </div>
+          <article v-for="message in messages" :key="message.id" class="chat-bubble">
             <div>
-              <strong>{{ author }}</strong>
-              <span>{{ time }}</span>
+              <strong>{{ message.author_name }}</strong>
+              <span>{{ formatTime(message.created_at) }}</span>
             </div>
-            <p>{{ body }}</p>
+            <p>{{ message.body }}</p>
           </article>
         </div>
 
@@ -71,12 +108,15 @@ const online = ['Amanda C.', 'Jeric T.', 'Ryan M.', 'Sarah K.']
       </main>
 
       <aside class="stitch-panel pad online-panel">
-        <span class="stitch-chip good">142 Online</span>
-        <div v-for="person in online" :key="person" class="online-person">
-          <span class="workspace-avatar">{{ person.slice(0, 1) }}</span>
+        <span class="stitch-chip good">{{ attendees.length }} Attendees</span>
+        <div v-if="!online.length" class="empty-state compact">
+          <p>No attendee roster yet.</p>
+        </div>
+        <div v-for="person in online" :key="person.id" class="online-person">
+          <span class="workspace-avatar">{{ person.full_name.slice(0, 1) }}</span>
           <div>
-            <strong>{{ person }}</strong>
-            <p>Frontend - Product</p>
+            <strong>{{ person.full_name }}</strong>
+            <p>{{ person.segment }}</p>
           </div>
         </div>
       </aside>

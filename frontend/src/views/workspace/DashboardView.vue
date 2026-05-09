@@ -1,25 +1,48 @@
 <script setup>
+import { computed } from 'vue'
+
 const emit = defineEmits(['navigate'])
 
-const metrics = [
-  ['Attendees', '86/100', '86% capacity'],
-  ['Budget', '$3.2k/$5k', 'Healthy runway'],
-  ['Messages', '12', 'Unread vendor replies'],
-]
+const props = defineProps({
+  workspace: {
+    type: Object,
+    default: null,
+  },
+  workspaceLoading: {
+    type: Boolean,
+    default: false,
+  },
+  workspaceError: {
+    type: String,
+    default: null,
+  },
+})
 
-const tasks = [
-  ['Venue shortlist', 'Review Exa-ranked leads and approve outreach.', 'Review Now'],
-  ['Marketing assets', 'Campaign Studio has poster and email drafts ready.', 'Open Studio'],
-  ['Attendee reminders', '24-hour logistics email is ready to schedule.', 'Schedule'],
-]
+const event = computed(() => props.workspace?.event ?? null)
+const metrics = computed(() => [
+  ['Venue leads', String(props.workspace?.venues?.length ?? 0), 'Ranked venue candidates'],
+  ['Vendor leads', String(props.workspace?.vendors?.length ?? 0), 'Supplier options saved'],
+  ['Campaign assets', String(props.workspace?.assets?.length ?? 0), 'Generated marketing outputs'],
+])
+
+const tasks = computed(() => props.workspace?.tasks?.length
+  ? props.workspace.tasks.map((task) => [
+      task.title,
+      task.description,
+      task.category === 'marketing' ? 'Open Studio' : 'Review Now',
+    ])
+  : [
+      ['Venue shortlist', 'Generate ranked venue leads and approve outreach.', 'Review Now'],
+      ['Marketing assets', 'Generate poster, campaign, and video direction assets.', 'Open Studio'],
+    ])
 </script>
 
 <template>
   <section class="stitch-page dashboard-stitch">
     <div class="stitch-topline">
       <div class="stitch-title-group">
-        <h1>Cybersecurity AI Hackathon</h1>
-        <p>October 24-26 - SMU Campus - Draft event workspace</p>
+        <h1>{{ event?.title || 'Loading workspace...' }}</h1>
+        <p>{{ event ? `${event.venue_name || 'Venue pending'} - ${event.status} event workspace` : 'Preparing organiser workspace' }}</p>
       </div>
       <div class="stitch-actions">
         <button class="stitch-secondary" type="button">Create Event</button>
@@ -41,11 +64,12 @@ const tasks = [
           <div>
             <span class="stitch-chip">calendar_month Event setup</span>
             <h2>Launch progress</h2>
-            <p>Gatherly has prepared the event structure, vendor queue, and marketing sequence.</p>
+            <p>{{ event?.ai_summary || 'Gatherly is preparing the event structure, vendor queue, and marketing sequence.' }}</p>
           </div>
-          <strong>72%</strong>
+          <strong>{{ workspaceLoading ? '...' : '72%' }}</strong>
         </div>
         <div class="progress-track"><div class="progress-bar" style="--progress: 72%"></div></div>
+        <p v-if="workspaceError" class="auth-error">{{ workspaceError }}</p>
         <div class="stitch-card-list">
           <div v-for="[title, copy, cta] in tasks" :key="title" class="stitch-row-card">
             <div>

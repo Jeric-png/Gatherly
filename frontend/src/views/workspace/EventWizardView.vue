@@ -1,17 +1,30 @@
 <script setup>
-const suggestions = [
-  'A candlelit rooftop gala in Lisbon',
-  'Sustainable tech summit for 200 people',
-  'Bohemian garden wedding with live jazz',
-]
+import { computed } from 'vue'
 
-const fields = [
-  ['City / Location', 'Barcelona, Spain', 'location_on'],
-  ['Event Vibe', 'Organic Garden Soiree', 'palette'],
-  ['Date & Time', 'October 24, 6:00 PM', 'calendar_month'],
-  ['Budget', '$25,000', 'payments'],
-  ['Capacity', '150 guests', 'groups'],
-]
+defineEmits(['navigate'])
+
+const props = defineProps({
+  workspace: {
+    type: Object,
+    default: null,
+  },
+})
+
+const event = computed(() => props.workspace?.event)
+
+const suggestions = computed(() => [
+  `${event.value?.category || 'Community event'} with warm hospitality`,
+  `Find venues in ${event.value?.city || 'my city'} for ${event.value?.capacity || 100} guests`,
+  'Generate vendor, marketing, and attendee reminder plan',
+])
+
+const fields = computed(() => [
+  ['City / Location', [event.value?.city, event.value?.country].filter(Boolean).join(', ') || 'Not set', 'location_on'],
+  ['Event Type', event.value?.category || 'Not set', 'palette'],
+  ['Date & Time', event.value?.starts_at ? new Date(event.value.starts_at).toLocaleString('en', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'Not set', 'calendar_month'],
+  ['Budget', 'Planning mode', 'payments'],
+  ['Capacity', event.value?.capacity ? `${event.value.capacity} guests` : 'Not set', 'groups'],
+])
 </script>
 
 <template>
@@ -28,10 +41,10 @@ const fields = [
       <span class="material-symbols-outlined">magic_button</span>
       <h2>Let's build something beautiful.</h2>
       <p>
-        I'm your AI Co-organiser. Tell me the vibe you're dreaming of, and I'll handle
-        the logistics, sourcing, and planning.
+        I'm your AI Co-organiser. Tell me the event brief, and I'll turn it into venue
+        sourcing, vendor outreach, marketing assets, and attendee operations.
       </p>
-      <textarea class="textarea">A sophisticated garden gala under the harvest moon, blending sustainable luxury with artisanal craftsmanship.</textarea>
+      <textarea class="textarea" :value="event?.description || ''" placeholder="Describe the event you want to create." />
       <div class="button-row">
         <button v-for="item in suggestions" :key="item" class="stitch-secondary" type="button">
           "{{ item }}"
@@ -51,9 +64,9 @@ const fields = [
       <span class="material-symbols-outlined">auto_fix</span>
       <div>
         <h3>Need a venue?</h3>
-        <p>I can suggest hidden gems based on your vibe. Takes about 30 seconds to dream up.</p>
+        <p>I can suggest venue and vendor leads based on your event brief, then pass the selected context into the marketing studio.</p>
       </div>
-      <button class="stitch-primary" type="button">Generate Plan</button>
+      <button class="stitch-primary" type="button" @click="$emit('navigate', 'venues')">Generate Plan</button>
     </aside>
   </section>
 </template>

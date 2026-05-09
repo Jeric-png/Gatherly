@@ -123,12 +123,12 @@ const aiFeatures = [
       <nav class="landing-links" aria-label="Landing navigation">
         <button class="landing-link is-active" type="button" @click="emit('navigate', 'explore')">Explore</button>
         <a class="landing-link" href="#how-it-works">How It Works</a>
-        <button class="landing-link" type="button" @click="emit('navigate', 'wizard')">Host an Event</button>
+        <button class="landing-link" type="button" @click="emit('navigate', 'auth')">Host an Event</button>
       </nav>
 
       <div class="landing-auth">
-        <button class="landing-login" type="button">Login</button>
-        <button class="landing-primary small" type="button" @click="emit('navigate', 'wizard')">
+        <button class="landing-login" type="button" @click="emit('navigate', 'auth')">Login</button>
+        <button class="landing-primary small" type="button" @click="emit('navigate', 'auth')">
           Get Started
         </button>
       </div>
@@ -144,7 +144,7 @@ const aiFeatures = [
           </p>
 
           <div class="landing-actions">
-            <button class="landing-primary" type="button" @click="emit('navigate', 'wizard')">
+            <button class="landing-primary" type="button" @click="emit('navigate', 'auth')">
               Create an Event
             </button>
             <button class="landing-secondary" type="button" @click="emit('navigate', 'explore')">
@@ -252,7 +252,7 @@ const aiFeatures = [
 
       <section class="landing-cta">
         <h2>From idea to launched event in minutes.</h2>
-        <button class="landing-primary small" type="button" @click="emit('navigate', 'wizard')">
+        <button class="landing-primary small" type="button" @click="emit('navigate', 'auth')">
           Start Planning
           <span class="material-symbols-outlined">arrow_forward</span>
         </button>

@@ -8,9 +8,17 @@ defineProps({
     type: Array,
     required: true,
   },
+  user: {
+    type: Object,
+    default: null,
+  },
+  workspace: {
+    type: Object,
+    default: null,
+  },
 })
 
-const emit = defineEmits(['navigate'])
+const emit = defineEmits(['navigate', 'sign-out'])
 </script>
 
 <template>
@@ -61,15 +69,16 @@ const emit = defineEmits(['navigate'])
       <div class="workspace-ai-card">
         <span class="material-symbols-outlined">auto_awesome</span>
         <strong>AI Co-organiser</strong>
-        <p>Drafting, ranking, and campaign support ready.</p>
+        <p>{{ workspace?.event?.title || 'Drafting, ranking, and campaign support ready.' }}</p>
       </div>
 
       <div class="workspace-profile">
-        <span class="workspace-avatar">JT</span>
+        <span class="workspace-avatar">{{ user?.email?.slice(0, 2)?.toUpperCase() || 'G' }}</span>
         <div>
-          <strong>Julian Thorne</strong>
-          <p>Premium Host</p>
+          <strong>{{ user?.email || 'Gatherly organiser' }}</strong>
+          <p>Signed in organiser</p>
         </div>
+        <button class="workspace-signout" type="button" @click="emit('sign-out')">Sign out</button>
       </div>
     </aside>
 

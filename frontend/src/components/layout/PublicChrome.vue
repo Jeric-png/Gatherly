@@ -25,8 +25,8 @@ const emit = defineEmits(['navigate'])
         <a class="public-link" href="#how-it-works">How It Works</a>
       </nav>
       <div class="public-actions">
-        <button class="public-login" type="button">Login</button>
-        <button class="public-primary" type="button" @click="emit('navigate', 'wizard')">Get Started</button>
+        <button class="public-login" type="button" @click="emit('navigate', 'auth')">Login</button>
+        <button class="public-primary" type="button" @click="emit('navigate', 'auth')">Get Started</button>
       </div>
     </header>
 
