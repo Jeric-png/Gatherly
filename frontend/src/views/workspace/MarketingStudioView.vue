@@ -26,6 +26,7 @@ const campaign = computed(() => props.workspace?.campaigns?.[0] ?? null)
 const assets = computed(() => props.workspace?.assets ?? [])
 const venues = computed(() => props.workspace?.venues ?? [])
 const vendors = computed(() => props.workspace?.vendors ?? [])
+const imageAsset = computed(() => assets.value.find((asset) => asset.asset_type === 'image' && asset.asset_url))
 const videoScenes = computed(() => {
   const sourceAssets = assets.value.filter((asset) => ['video_prompt', 'campaign_plan'].includes(asset.asset_type))
 
@@ -107,7 +108,14 @@ async function generateAsset() {
           <span class="material-symbols-outlined">photo_prints</span>
           Visual Asset Engine
         </span>
-        <div class="poster-preview">
+        <div v-if="imageAsset" class="generated-image-preview">
+          <img :src="imageAsset.asset_url" :alt="imageAsset.title" />
+          <div>
+            <strong>{{ imageAsset.title }}</strong>
+            <p>{{ imageAsset.content }}</p>
+          </div>
+        </div>
+        <div v-else class="poster-preview">
           <p>{{ event?.category || 'EVENT' }}</p>
           <h3>{{ event?.title || 'CAMPAIGN' }}</h3>
           <span>{{ venues[0]?.name || 'Venue pending' }}</span>

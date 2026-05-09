@@ -1,0 +1,2 @@
+[functions.generate-event-workflow]
+verify_jwt = true

@@ -21,7 +21,7 @@ const workspaceEventSeed = {
   currency: 'USD',
   tags: ['networking', 'dinner', 'founders'],
   ai_summary:
-    'Venue shortlist, vendor outreach, attendee reminders, and campaign assets are ready for review.',
+    'Describe the event in the AI Event Wizard to generate source-backed venue leads, vendor leads, and marketing assets.',
 }
 
 function slugForUser(user) {
@@ -169,148 +169,7 @@ async function countRows(table, eventId) {
 }
 
 async function seedWorkspaceRows(eventId) {
-  const [venueCount, vendorCount, campaignCount, taskCount] = await Promise.all([
-    countRows('venue_leads', eventId),
-    countRows('vendor_leads', eventId),
-    countRows('marketing_campaigns', eventId),
-    countRows('operation_tasks', eventId),
-  ])
-
-  if (!venueCount) {
-    const { error } = await supabase.from('venue_leads').insert([
-      {
-        event_id: eventId,
-        name: 'The Assembly Loft',
-        venue_type: 'Creative venue',
-        city: 'Any city',
-        address: 'Studio district',
-        capacity_min: 80,
-        capacity_max: 120,
-        estimated_price: 1400,
-        currency: 'USD',
-        amenities: ['AV', 'flexible seating', 'catering access'],
-        source_provider: 'seed',
-        fit_score: 94,
-        status: 'shortlisted',
-        ai_rationale:
-          'Strong match for a warm networking dinner with flexible layout and visual atmosphere.',
-        missing_info: 'Confirm final package pricing and weekend availability.',
-      },
-      {
-        event_id: eventId,
-        name: 'Civic Hall Studio',
-        venue_type: 'Workshop space',
-        city: 'Any city',
-        address: 'Civic centre',
-        capacity_min: 60,
-        capacity_max: 100,
-        estimated_price: 900,
-        currency: 'USD',
-        amenities: ['projector', 'transit access'],
-        source_provider: 'seed',
-        fit_score: 88,
-        status: 'suggested',
-        ai_rationale:
-          'Operationally simple venue with projector, transit access, and affordable weekday rates.',
-        missing_info: 'Check catering rules and after-hours access.',
-      },
-    ])
-
-    if (error) {
-      throw error
-    }
-  }
-
-  if (!vendorCount) {
-    const { error } = await supabase.from('vendor_leads').insert([
-      {
-        event_id: eventId,
-        name: 'Tablecraft Catering',
-        vendor_type: 'Catering',
-        city: 'Any city',
-        service_area: 'Dinner events',
-        estimated_price_min: 18,
-        estimated_price_max: 28,
-        currency: 'USD',
-        source_provider: 'seed',
-        fit_score: 91,
-        status: 'shortlisted',
-        ai_rationale:
-          'Good fit for flexible menus, halal-friendly requests, and plated or buffet service.',
-      },
-      {
-        event_id: eventId,
-        name: 'Signal AV Studio',
-        vendor_type: 'AV support',
-        city: 'Any city',
-        service_area: 'Workshops and dinners',
-        estimated_price_min: 600,
-        estimated_price_max: 600,
-        currency: 'USD',
-        source_provider: 'seed',
-        fit_score: 86,
-        status: 'suggested',
-        ai_rationale:
-          'Simple projector, microphone, lighting, and technician bundle for workshops.',
-      },
-    ])
-
-    if (error) {
-      throw error
-    }
-  }
-
-  if (!campaignCount) {
-    const { data: campaign, error } = await supabase
-      .from('marketing_campaigns')
-      .insert({
-        event_id: eventId,
-        title: 'Warm Product Stories Launch Campaign',
-        objective: 'Drive RSVPs from local founders and product builders.',
-        audience: 'Early-stage founders, product leads, and community operators.',
-        channels: ['email', 'instagram', 'linkedin', 'paid_social'],
-        status: 'generated',
-        strategy_summary:
-          'Use venue warmth and founder storytelling as the creative anchor. Pair generated images with short founder-led copy and a vertical promo video.',
-      })
-      .select()
-      .single()
-
-    if (error) {
-      throw error
-    }
-
-    const { error: assetsError } = await supabase.from('marketing_assets').insert([
-      {
-        campaign_id: campaign.id,
-        event_id: eventId,
-        asset_type: 'poster_prompt',
-        title: 'Warm dinner poster prompt',
-        prompt:
-          'Create a warm editorial poster for a founder dinner in a loft venue with natural light, intimate tables, and thoughtful conversation.',
-        content: '4:5 social poster concept using venue and catering context.',
-        provider: 'openai',
-        model_name: 'chatgpt-image-2',
-        status: 'generated',
-        metadata: { aspect_ratio: '4:5' },
-      },
-      {
-        campaign_id: campaign.id,
-        event_id: eventId,
-        asset_type: 'caption',
-        title: 'LinkedIn invite caption',
-        content:
-          'Join a small founder dinner built around honest product stories, practical lessons, and people you will actually want to follow up with.',
-        provider: 'openai',
-        model_name: 'gpt-5.5',
-        status: 'generated',
-      },
-    ])
-
-    if (assetsError) {
-      throw assetsError
-    }
-  }
+  const taskCount = await countRows('operation_tasks', eventId)
 
   if (!taskCount) {
     const { error } = await supabase.from('operation_tasks').insert([
@@ -425,4 +284,35 @@ export async function generateMarketingAsset(workspace) {
   if (error) {
     throw error
   }
+}
+
+export async function runEventWorkflow(event, brief) {
+  requireSupabase()
+
+  const trimmedBrief = brief?.trim()
+
+  if (!event?.id) {
+    throw new Error('An event workspace is required before generating a plan.')
+  }
+
+  if (!trimmedBrief) {
+    throw new Error('Describe the event you want to create before generating the plan.')
+  }
+
+  const { data, error } = await supabase.functions.invoke('generate-event-workflow', {
+    body: {
+      eventId: event.id,
+      brief: trimmedBrief,
+    },
+  })
+
+  if (error) {
+    throw new Error(error.message || 'The AI event workflow failed.')
+  }
+
+  if (data?.error) {
+    throw new Error(data.error)
+  }
+
+  return data
 }

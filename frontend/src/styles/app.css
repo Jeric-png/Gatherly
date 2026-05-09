@@ -1650,6 +1650,41 @@ a {
 .wizard-hero .textarea {
   min-height: 10rem;
   font-size: 1rem;
+  line-height: 1.55;
+}
+
+.agent-step-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.agent-step-card {
+  display: grid;
+  gap: 0.65rem;
+  align-content: start;
+}
+
+.agent-step-card > .material-symbols-outlined {
+  display: grid;
+  width: 2.8rem;
+  height: 2.8rem;
+  place-items: center;
+  border-radius: 50%;
+  color: #ae3115;
+  background: #ffdad2;
+}
+
+.agent-step-card h3 {
+  margin: 0;
+  color: #1b1c1c;
+  font-size: 1rem;
+}
+
+.agent-step-card p {
+  margin: 0;
+  color: #59413c;
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1.45;
 }
 
 .wizard-field-grid {
@@ -1848,6 +1883,46 @@ a {
   max-width: 17rem;
   font-size: 2.1rem;
   line-height: 1.05;
+}
+
+.generated-image-preview {
+  position: relative;
+  overflow: hidden;
+  min-height: 24rem;
+  margin: 1rem 0;
+  border: 1px solid rgba(225, 191, 184, 0.68);
+  border-radius: 1rem;
+  background: #f6f3f2;
+}
+
+.generated-image-preview img {
+  display: block;
+  width: 100%;
+  height: 24rem;
+  object-fit: cover;
+}
+
+.generated-image-preview div {
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+  left: 1rem;
+  padding: 0.9rem;
+  border-radius: 0.85rem;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 14px 34px rgba(61, 6, 0, 0.1);
+}
+
+.generated-image-preview strong,
+.generated-image-preview p {
+  margin: 0;
+}
+
+.generated-image-preview p {
+  margin-top: 0.3rem;
+  color: #59413c;
+  font-size: 0.82rem;
+  font-weight: 700;
 }
 
 .video-tabs {

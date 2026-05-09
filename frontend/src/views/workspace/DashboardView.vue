@@ -25,6 +25,15 @@ const metrics = computed(() => [
   ['Campaign assets', String(props.workspace?.assets?.length ?? 0), 'Generated marketing outputs'],
 ])
 
+const progress = computed(() => {
+  const venueReady = props.workspace?.venues?.length ? 25 : 0
+  const vendorReady = props.workspace?.vendors?.length ? 25 : 0
+  const campaignReady = props.workspace?.campaigns?.length ? 20 : 0
+  const assetReady = props.workspace?.assets?.length ? 20 : 0
+  const attendeeReady = props.workspace?.attendees?.length ? 10 : 0
+  return venueReady + vendorReady + campaignReady + assetReady + attendeeReady
+})
+
 const tasks = computed(() => props.workspace?.tasks?.length
   ? props.workspace.tasks.map((task) => [
       task.title,
@@ -45,7 +54,7 @@ const tasks = computed(() => props.workspace?.tasks?.length
         <p>{{ event ? `${event.venue_name || 'Venue pending'} - ${event.status} event workspace` : 'Preparing organiser workspace' }}</p>
       </div>
       <div class="stitch-actions">
-        <button class="stitch-secondary" type="button">Create Event</button>
+        <button class="stitch-secondary" type="button" @click="emit('navigate', 'wizard')">Create Event</button>
         <button class="stitch-primary" type="button">Publish Event</button>
       </div>
     </div>
@@ -69,9 +78,9 @@ const tasks = computed(() => props.workspace?.tasks?.length
             <h2>Launch progress</h2>
             <p>{{ event?.ai_summary || 'Gatherly is preparing the event structure, vendor queue, and marketing sequence.' }}</p>
           </div>
-          <strong>{{ workspaceLoading ? '...' : '72%' }}</strong>
+          <strong>{{ workspaceLoading ? '...' : `${progress}%` }}</strong>
         </div>
-        <div class="progress-track"><div class="progress-bar" style="--progress: 72%"></div></div>
+        <div class="progress-track"><div class="progress-bar" :style="{ '--progress': `${progress}%` }"></div></div>
         <p v-if="workspaceError" class="auth-error">{{ workspaceError }}</p>
         <div class="stitch-card-list">
           <div v-for="[title, copy, cta] in tasks" :key="title" class="stitch-row-card">
