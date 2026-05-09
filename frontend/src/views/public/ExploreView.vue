@@ -80,7 +80,10 @@ const conciergeEvents = computed(() => cards.value.slice(1, 3))
     <main class="explore-stitch">
       <section class="explore-hero">
         <div class="explore-copy">
-          <span class="stitch-chip">near_me Nearby spotlight</span>
+          <span class="stitch-chip">
+            <span class="material-symbols-outlined">near_me</span>
+            Nearby spotlight
+          </span>
           <h2>{{ spotlightEvent?.title || 'Cybersecurity AI Hackathon' }}</h2>
           <p>
             {{

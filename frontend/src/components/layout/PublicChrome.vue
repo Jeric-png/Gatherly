@@ -23,6 +23,7 @@ const emit = defineEmits(['navigate'])
           Explore
         </button>
         <a class="public-link" href="#how-it-works">How It Works</a>
+        <button class="public-link" type="button" @click="emit('navigate', 'auth')">Host an Event</button>
       </nav>
       <div class="public-actions">
         <button class="public-login" type="button" @click="emit('navigate', 'auth')">Login</button>

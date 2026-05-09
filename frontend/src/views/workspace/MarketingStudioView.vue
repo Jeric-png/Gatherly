@@ -76,7 +76,10 @@ async function generateAsset() {
 
     <div class="campaign-layout">
       <section class="stitch-panel pad campaign-brief">
-        <span class="stitch-chip">strategy Campaign Inputs</span>
+        <span class="stitch-chip">
+          <span class="material-symbols-outlined">strategy</span>
+          Campaign Inputs
+        </span>
         <h3>{{ event?.title || 'Loading campaign brief...' }}</h3>
         <p>{{ venues[0]?.name || event?.venue_name || 'No venue selected yet' }}</p>
         <p>{{ campaign?.strategy_summary || event?.description }}</p>
@@ -100,7 +103,10 @@ async function generateAsset() {
 
     <section class="stitch-grid-2">
       <article class="stitch-panel pad">
-        <span class="stitch-chip">photo_prints Visual Asset Engine</span>
+        <span class="stitch-chip">
+          <span class="material-symbols-outlined">photo_prints</span>
+          Visual Asset Engine
+        </span>
         <div class="poster-preview">
           <p>{{ event?.category || 'EVENT' }}</p>
           <h3>{{ event?.title || 'CAMPAIGN' }}</h3>
@@ -114,7 +120,10 @@ async function generateAsset() {
       </article>
 
       <article class="stitch-panel pad">
-        <span class="stitch-chip">movie Promo Video</span>
+        <span class="stitch-chip">
+          <span class="material-symbols-outlined">movie</span>
+          Promo Video
+        </span>
         <div class="video-tabs">
           <button class="stitch-primary" type="button">15S</button>
           <button class="stitch-secondary" type="button">30S</button>

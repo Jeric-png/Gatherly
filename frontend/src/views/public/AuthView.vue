@@ -41,7 +41,10 @@ async function submitAuth() {
   <PublicChrome active="auth" @navigate="emit('navigate', $event)">
     <main class="auth-stitch">
       <section class="auth-panel stitch-panel pad">
-        <span class="stitch-chip">auto_awesome Organiser access</span>
+        <span class="stitch-chip">
+          <span class="material-symbols-outlined">auto_awesome</span>
+          Organiser access
+        </span>
         <h1>{{ title }}</h1>
         <p>
           Sign in to manage AI-assisted venue sourcing, vendor outreach, campaign generation,

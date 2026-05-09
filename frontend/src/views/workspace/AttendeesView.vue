@@ -78,7 +78,10 @@ function formatStatus(status) {
 
     <div class="attendee-grid">
       <section class="stitch-panel pad">
-        <span class="stitch-chip">auto_awesome AI Mailing List Builder</span>
+        <span class="stitch-chip">
+          <span class="material-symbols-outlined">auto_awesome</span>
+          AI Mailing List Builder
+        </span>
         <h3>Suggesting segments based on activity</h3>
         <div class="stitch-card-list">
           <div v-for="[label, count, segment] in segments" :key="segment" class="stitch-row-card">

@@ -62,7 +62,10 @@ const tasks = computed(() => props.workspace?.tasks?.length
       <section class="stitch-panel pad">
         <div class="dashboard-progress">
           <div>
-            <span class="stitch-chip">calendar_month Event setup</span>
+            <span class="stitch-chip">
+              <span class="material-symbols-outlined">calendar_month</span>
+              Event setup
+            </span>
             <h2>Launch progress</h2>
             <p>{{ event?.ai_summary || 'Gatherly is preparing the event structure, vendor queue, and marketing sequence.' }}</p>
           </div>

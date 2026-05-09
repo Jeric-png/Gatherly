@@ -186,11 +186,6 @@ const aiFeatures = [
             <p>Found 3 venues for 100 pax within budget.</p>
           </div>
 
-          <div class="co-card promo-card">
-            <span class="mini-icon neutral">C</span>
-            <strong>Promo Ready</strong>
-            <p>Instagram caption and poster generated.</p>
-          </div>
         </div>
       </section>
 
